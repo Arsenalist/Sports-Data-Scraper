@@ -15,17 +15,18 @@ class PlayByPlayParser:
         self.game_id = game_id
         print self.game_id
         self.html = self.get_html()
-    
+        s = BeautifulSoup(self.html, "html5lib")
+
     def get_html(self):
         return requests.get(self.PBP_BASE_URL + "&gameId=" + self.game_id).text
 
     def get_home_team(self):
-        s = BeautifulSoup(self.html)
+        s = BeautifulSoup(self.html, "html5lib")
         table = s.find('table', attrs={'class': 'mod-data'})
         return table.thead.contents[1].contents[3].string;
        
 
-    def to_csv(self):
+    def to_csv(self):   
         s = BeautifulSoup(self.html)
         table = s.find('table', attrs={'class': 'mod-data'})
         pbp = ""
@@ -51,7 +52,7 @@ class ScoreboardParser:
 
     def get_game_ids(self):
         html = self.get_html()
-        soup = BeautifulSoup(html)
+        soup = BeautifulSoup(html, "html5lib")
         game_ids = []
         tags = soup.findAll(attrs={'id': re.compile(r".*statusLine1")})
         for tag in tags:
