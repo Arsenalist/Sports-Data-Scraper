@@ -80,7 +80,7 @@ class Controller:
 
     def write_to_file(self, absolute_path, content):
         f = open(absolute_path,'w+')
-        f.write(content)
+        f.write(content.encode('utf-8'))
         f.close()
 
     def read_bytes(self, file_path):
