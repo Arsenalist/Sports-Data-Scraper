@@ -13,7 +13,6 @@ class PlayByPlayParser:
     def __init__(self, game_id):
         self.PBP_BASE_URL = "http://scores.espn.go.com/nba/playbyplay?period=0"
         self.game_id = game_id
-        print self.game_id
         self.html = self.get_html()
         s = BeautifulSoup(self.html, "html5lib")
 
@@ -70,12 +69,17 @@ class Controller:
         zip_dir =  dir_path + date + "/"
         os.makedirs(zip_dir)
         for game_id in game_ids:
+            print "Current Game: " + game_id
             p = PlayByPlayParser(game_id)
+            print "Parsed Play By Play"
             csv_path = zip_dir + p.get_home_team().title().replace(" ", "_") + "_" + date + ".csv"
             self.write_to_file(csv_path, p.to_csv())
+            print "File Created"
         
         zip_path = "./" + dir_name + ".zip"
+        print "About to create zip..."
         self.create_zip(zip_path, zip_dir, "playbyplay_" + date)
+        print "Zip created"
         return (dir_path, zip_path)
 
     def write_to_file(self, absolute_path, content):
