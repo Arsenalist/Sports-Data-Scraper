@@ -92,7 +92,7 @@ class Controller:
     def send_playbyplay_email(self, subject, to_email, file):
         print "Sending email to " + to_email + " with attachment " + file
         r = requests.post("https://api.mailgun.net/v2/arsenalist.com/messages",
-                            auth=("api", "key-87e4l1772aqgc5prnavmr1ecm9iqgr43"),
+                            auth=("api", "ENTERKEY"),
                             files=[("attachment", open(file))],
                             data={"from": "Arsenalist Mailer <mailer@arsenalist.com>",
                                   "to": to_email,
