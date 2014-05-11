@@ -63,6 +63,8 @@ class ScoreboardParser:
 
 class Controller:
     def generate_playbyplay_csv(self, date):
+        prnit "in the controller"
+        sys.stdout.flush()
         s = ScoreboardParser(date)
         game_ids = s.get_game_ids()
         dir_name = str(uuid.uuid4())
@@ -73,6 +75,8 @@ class Controller:
         date_for_user = time.strftime("%m%d%Y", date_obj)
 
         for game_id in game_ids:
+            print "doing this now "
+            sys.stdout.flush()
             print "Current Game: " + game_id
             p = PlayByPlayParser(game_id)
             print "Parsed Play By Play"

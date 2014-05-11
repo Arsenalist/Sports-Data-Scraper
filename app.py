@@ -15,7 +15,11 @@ def generate_csv(date, email):
 	headers = { 'Content-Type': 'application/zip', 
 	            'Content-Disposition': 'attachment; filename=playbyplay_' + date +'.zip'}
 	c = Controller()
+	print "about to do the worker"
+	sys.stdout.flush()
 	result = q.enqueue(c.playbyplay_handler, date_normalized, email)
+	print "did the worker"
+	sys.stdout.flush()
 	return "A file will be emailed to you very shortly."
 
 	#zip_bytes = c.convert_to_bytes(files[0], files[1])
