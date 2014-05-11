@@ -1,15 +1,20 @@
 import sys
 from flask import Flask, send_file, make_response
 from sportsparser import Controller
-from worker import conn
+
 from rq import Queue
 import time
+
+import redis
+
 
 app = Flask(__name__) 
 app.config.from_pyfile('config.py')
 
 @app.route('/playbyplay/<date>/<email>')
 def generate_csv(date, email):
+	redis_url = os.getenv('REDISTOGO_URL', 'redis://localhost:6379')
+	conn = redis.from_url(redis_url)
 	q = Queue(connection=conn)
 	date_obj = time.strptime(date, "%m%d%Y")   
 	date_normalized = time.strftime("%Y%m%d", date_obj)
