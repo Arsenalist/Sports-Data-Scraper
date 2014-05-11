@@ -15,23 +15,25 @@ class PlayByPlayParser:
     def __init__(self, game_id):
         self.PBP_BASE_URL = "http://scores.espn.go.com/nba/playbyplay?period=0"
         self.game_id = game_id
-        self.html = self.get_html()
+        self.html = self.get_html()        
+        self.soup = BeautifulSoup(self.html, "html5lib")
 
     def get_html(self):
-        return requests.get(self.PBP_BASE_URL + "&gameId=" + self.game_id).text
+        r = requests.get(self.PBP_BASE_URL + "&gameId=" + self.game_id)
+        if r.status_code != 200:
+            raise Exception("Could not get HTML for " + self.game_id + " " + r.text)
+        return r.text
+
+    def is_valid(self):
+        return self.soup.find('table', attrs={'class': 'mod-data'}) != None
 
     def get_home_team(self):
-        s = BeautifulSoup(self.html, "html5lib")
-        table = s.find('table', attrs={'class': 'mod-data'})
-        print "table is: "
-        print table
-        sys.stdout.flush()
+        table = self.soup.find('table', attrs={'class': 'mod-data'})
         return table.thead.contents[1].contents[3].string;
        
 
-    def to_csv(self):   
-        s = BeautifulSoup(self.html)
-        table = s.find('table', attrs={'class': 'mod-data'})
+    def to_csv(self):           
+        table = self.soup.find('table', attrs={'class': 'mod-data'})
         pbp = ""
         for tr in table.find_all('tr'):
             tds = tr.find_all('td')
@@ -49,15 +51,19 @@ class ScoreboardParser:
     def __init__(self, date):
         self.BASE_URL = 'http://scores.espn.go.com/nba/scoreboard?date='
         self.date = date
+        self.html = self.get_html()
+        self.soup = BeautifulSoup(self.html, "html5lib")
 
     def get_html(self):
-        return requests.get(self.BASE_URL + self.date).text
+        r = requests.get(self.BASE_URL + self.date)
+        if r.status_code != 200:
+            raise Exception("Could not get HTML for scoreboard " + self.date + " " + r.text)
+        return r.text
+
 
     def get_game_ids(self):
-        html = self.get_html()
-        soup = BeautifulSoup(html, "html5lib")
         game_ids = []
-        tags = soup.findAll(attrs={'id': re.compile(r".*statusLine1")})
+        tags = self.soup.findAll(attrs={'id': re.compile(r".*statusLine1")})
         print "Tags are"
         print tags
         sys.stdout.flush()
@@ -85,10 +91,13 @@ class Controller:
             print "Game ID being processed is " + game_id
             sys.stdout.flush()
             p = PlayByPlayParser(game_id)
-            csv_path = dir_path + p.get_home_team().title().replace(" ", "_") + "_" + date_for_user + ".csv"
-            self.write_to_file(csv_path, p.to_csv())
-            print "Done processing " + game_id
-            sys.stdout.flush()
+            if p.is_valid():
+                csv_path = dir_path + p.get_home_team().title().replace(" ", "_") + "_" + date_for_user + ".csv"
+                self.write_to_file(csv_path, p.to_csv())
+                print "Done processing " + game_id
+                sys.stdout.flush()
+            else:
+                print "Invalid " + game_id
         
         zip_path = "./playbyplay_" + date_for_user + "_" + dir_name + ".zip"
         self.create_zip(zip_path, dir_path, "playbyplay_" + date_for_user)
