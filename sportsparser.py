@@ -16,7 +16,6 @@ class PlayByPlayParser:
         self.PBP_BASE_URL = "http://scores.espn.go.com/nba/playbyplay?period=0"
         self.game_id = game_id
         self.html = self.get_html()
-        s = BeautifulSoup(self.html, "html5lib")
 
     def get_html(self):
         return requests.get(self.PBP_BASE_URL + "&gameId=" + self.game_id).text
@@ -24,8 +23,8 @@ class PlayByPlayParser:
     def get_home_team(self):
         s = BeautifulSoup(self.html, "html5lib")
         table = s.find('table', attrs={'class': 'mod-data'})
-        print "table thead is: "
-        print table.thead
+        print "table is: "
+        print table
         sys.stdout.flush()
         return table.thead.contents[1].contents[3].string;
        
@@ -67,12 +66,7 @@ class ScoreboardParser:
 
 class Controller:
     def generate_playbyplay_csv(self, date):
-        print "in playbyplay"
-        sys.stdout.flush()
-
         s = ScoreboardParser(date)
-        print "after scoreboard parser" 
-        sys.stdout.flush()
         game_ids = s.get_game_ids()
         dir_name = str(uuid.uuid4())
         dir_path = "./" + dir_name + "/"
@@ -82,12 +76,9 @@ class Controller:
         date_for_user = time.strftime("%m%d%Y", date_obj)
 
         for game_id in game_ids:
-            print "in game id loop " + game_id
-            sys.stdout.flush()
             p = PlayByPlayParser(game_id)
             csv_path = dir_path + p.get_home_team().title().replace(" ", "_") + "_" + date_for_user + ".csv"
             self.write_to_file(csv_path, p.to_csv())
-            print "Current Game: " + game_id
         
         zip_path = "./playbyplay_" + date_for_user + "_" + dir_name + ".zip"
         self.create_zip(zip_path, dir_path, "playbyplay_" + date_for_user)
@@ -95,9 +86,21 @@ class Controller:
         return zip_path
 
     def playbyplay_handler(self, date, email):
-        zip_file = self.generate_playbyplay_csv(date)
-        self.send_playbyplay_email("Play by Play for " + date, email, zip_file)
-        os.remove(zip_file)
+        try:
+            zip_file = self.generate_playbyplay_csv(date)
+            date_obj = time.strptime(date, "%Y%m%d")   
+            date_for_user = time.strftime("%m%d%Y", date_obj)
+            self.send_playbyplay_email("Play by Play for " + date_for_user, email, zip_file)
+            os.remove(zip_file)
+        except Exception as inst:
+            print "FATALERROR"
+            sys.stdout.flush()
+            r = requests.post("https://api.mailgun.net/v2/arsenalist.com/messages",
+                                auth=("api", "key-87e4l1772aqgc5prnavmr1ecm9iqgr43"),
+                                data={"from": "Arsenalist Mailer <mailer@arsenalist.com>",
+                                      "to": "zarars@gmail.com",
+                                      "subject": "FATALERROR",
+                                      "text": str(inst)})   
 
     def send_playbyplay_email(self, subject, to_email, file):
         print "Sending email to " + to_email + " with attachment " + file
@@ -109,7 +112,7 @@ class Controller:
                                   "subject": subject,
                                   "text": "A zip file is attached."})   
         if r.status_code != 200:
-            print r.text
+            raise Exception("Couldn't send email " + r.text)
 
 
     def write_to_file(self, absolute_path, content):

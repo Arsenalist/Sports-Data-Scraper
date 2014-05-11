@@ -1,5 +1,5 @@
 import sys
-from flask import Flask, send_file, make_response
+from flask import Flask, send_file, make_response, request
 from sportsparser import Controller
 
 from rq import Queue
@@ -11,8 +11,20 @@ import os
 app = Flask(__name__) 
 app.config.from_pyfile('config.py')
 
-@app.route('/playbyplay/<date>/<email>')
-def generate_csv(date, email):
+@app.route('/playbyplay', methods=['GET'])
+def playbyplay_form():
+	return "<form action='/playbyplay' method='post'><input type='text' name='date' placeholder='mmddyyyy'><input type='text' name='email' placeholder='Enter email here'/><input type='submit' value='Submit'/></form>"
+
+
+@app.route('/playbyplay', methods=['POST'])
+def generate_csv():
+	print "hi there"
+	date = request.form["date"]
+	email = request.form["email"]
+	print date
+	print email
+	sys.stdout.flush()
+
 	redis_url = os.getenv('REDISTOGO_URL', 'redis://localhost:6379')
 	conn = redis.from_url(redis_url)
 	q = Queue(connection=conn)
