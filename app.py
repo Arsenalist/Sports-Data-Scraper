@@ -1,3 +1,4 @@
+import sys
 from flask import Flask, send_file, make_response
 from sportsparser import Controller
 from worker import conn
