@@ -63,7 +63,7 @@ class ScoreboardParser:
 
 class Controller:
     def generate_playbyplay_csv(self, date):
-        prnit "in the controller"
+        print "in the controller"
         sys.stdout.flush()
         s = ScoreboardParser(date)
         game_ids = s.get_game_ids()
