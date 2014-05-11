@@ -64,7 +64,12 @@ class ScoreboardParser:
 
 class Controller:
     def generate_playbyplay_csv(self, date):
+        print "in playbyplay"
+        sys.stdout.flush()
+
         s = ScoreboardParser(date)
+        print "after scoreboard parser" 
+        sys.stdout.flush()
         game_ids = s.get_game_ids()
         dir_name = str(uuid.uuid4())
         dir_path = "./" + dir_name + "/"
@@ -74,6 +79,8 @@ class Controller:
         date_for_user = time.strftime("%m%d%Y", date_obj)
 
         for game_id in game_ids:
+            print "in game id loop " + game_id
+            sys.stdout.flush()
             p = PlayByPlayParser(game_id)
             csv_path = dir_path + p.get_home_team().title().replace(" ", "_") + "_" + date_for_user + ".csv"
             self.write_to_file(csv_path, p.to_csv())
@@ -92,7 +99,7 @@ class Controller:
     def send_playbyplay_email(self, subject, to_email, file):
         print "Sending email to " + to_email + " with attachment " + file
         r = requests.post("https://api.mailgun.net/v2/arsenalist.com/messages",
-                            auth=("api", "ENTERKEY"),
+                            auth=("api", "key-87e4l1772aqgc5prnavmr1ecm9iqgr43"),
                             files=[("attachment", open(file))],
                             data={"from": "Arsenalist Mailer <mailer@arsenalist.com>",
                                   "to": to_email,
