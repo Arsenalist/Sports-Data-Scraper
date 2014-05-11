@@ -93,7 +93,7 @@ class Controller:
 
     def playbyplay_handler(self, date, email):
         zip_file = self.generate_playbyplay_csv(date)
-        self.send_playbyplay_email("Play by Play for " + date_for_user, email, zip_file)
+        self.send_playbyplay_email("Play by Play for " + date, email, zip_file)
         os.remove(zip_file)
 
     def send_playbyplay_email(self, subject, to_email, file):
