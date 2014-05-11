@@ -58,9 +58,15 @@ class ScoreboardParser:
         soup = BeautifulSoup(html, "html5lib")
         game_ids = []
         tags = soup.findAll(attrs={'id': re.compile(r".*statusLine1")})
+        print "Tags are"
+        print tags
+        sys.stdout.flush()
         for tag in tags:
             game_ids.append(tag['id'].split('-')[0])
 
+        print "Game IDs being returned"
+        print game_ids
+        sys.stdout.flush()
         return game_ids
  
 
@@ -76,9 +82,13 @@ class Controller:
         date_for_user = time.strftime("%m%d%Y", date_obj)
 
         for game_id in game_ids:
+            print "Game ID being processed is " + game_id
+            sys.stdout.flush()
             p = PlayByPlayParser(game_id)
             csv_path = dir_path + p.get_home_team().title().replace(" ", "_") + "_" + date_for_user + ".csv"
             self.write_to_file(csv_path, p.to_csv())
+            print "Done processing " + game_id
+            sys.stdout.flush()
         
         zip_path = "./playbyplay_" + date_for_user + "_" + dir_name + ".zip"
         self.create_zip(zip_path, dir_path, "playbyplay_" + date_for_user)
