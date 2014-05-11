@@ -6,7 +6,7 @@ from rq import Queue
 import time
 
 import redis
-
+import os
 
 app = Flask(__name__) 
 app.config.from_pyfile('config.py')
