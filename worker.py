@@ -13,6 +13,6 @@ conn = redis.from_url(redis_url)
 if __name__ == '__main__':
 	print "in main"
 	sys.stdout.flush()
-    with Connection(conn):
-        worker = Worker(map(Queue, listen))
-        worker.work()
+	with Connection(conn):
+		worker = Worker(map(Queue, listen))
+		worker.work()
