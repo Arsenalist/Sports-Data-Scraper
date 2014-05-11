@@ -1,21 +1,28 @@
-import time
 from flask import Flask, send_file, make_response
-import parser
+from sportsparser import Controller
+from worker import conn
+from rq import Queue
+import time
+
 app = Flask(__name__) 
+app.config.from_pyfile('config.py')
 
-@app.route('/playbyplay/<date>')
-def generate_csv(date):
+@app.route('/playbyplay/<date>/<email>')
+def generate_csv(date, email):
+	q = Queue(connection=conn)
+	date_obj = time.strptime(date, "%m%d%Y")   
+	date_normalized = time.strftime("%Y%m%d", date_obj)
+	headers = { 'Content-Type': 'application/zip', 
+	            'Content-Disposition': 'attachment; filename=playbyplay_' + date +'.zip'}
+	c = Controller()
+	result = q.enqueue(c.playbyplay_handler, date_normalized, email)
+	return "A file will be emailed to you very shortly."
 
-    date_obj = time.strptime(date, "%m%d%Y")   
-    date = time.strftime("%Y%m%d", date_obj)
-    headers = { 'Content-Type': 'application/zip', 
-                'Content-Disposition': 'attachment; filename=playbyplay_' + date +'.zip'}
-    c = parser.Controller()
-    files = c.generate_playbyplay_csv(date)
-    zip_bytes = c.convert_to_bytes(files[0], files[1])
-    return make_response(zip_bytes, 200, headers)
+	#zip_bytes = c.convert_to_bytes(files[0], files[1])
+	#return make_response(zip_bytes, 200, headers)
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+	print "hello"
+	app.run(debug=True)
 
