@@ -24,6 +24,9 @@ class PlayByPlayParser:
     def get_home_team(self):
         s = BeautifulSoup(self.html, "html5lib")
         table = s.find('table', attrs={'class': 'mod-data'})
+        print "table thead is: "
+        print table.thead
+        sys.stdout.flush()
         return table.thead.contents[1].contents[3].string;
        
 
